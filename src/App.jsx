@@ -1,24 +1,36 @@
-import React from 'react';
+import React, { Suspense, lazy, useEffect } from 'react'; // ✅ أضف useEffect
 import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
-import ProductsList from './pages/ProductsList';
-import ProductDetails from './pages/ProductDetails';
-import NotFound from './pages/NotFound';
-import Cart from './pages/Cart';
+import { LanguageProvider } from './components/Language';
+
+const ProductsList = lazy(() => import('./pages/ProductsList'));
+const ProductDetails = lazy(() => import('./pages/ProductDetails'));
+const Cart = lazy(() => import('./pages/Cart'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 function App() {
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/products`)
+      .then(res => res.json())
+      .then(data => console.log(data));
+  }, []);
+
   return (
-    <div>
+    <LanguageProvider>
       <Navbar />
       <div className="container mt-4">
-        <Routes>
-          <Route path="/" element={<ProductsList />} />
-          <Route path="/products/:id" element={<ProductDetails />} />
-          <Route path="*" element={<NotFound />} />
-          <Route path="/cart" element={<Cart />} />
-        </Routes>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Routes>
+            <Route path="/" element={<ProductsList />} />
+            <Route path="/products/:id" element={<ProductDetails />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </div>
-    </div>
+    </LanguageProvider>
   );
 }
 
